@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ config('app.name', 'Library App') }}</title>
+    <title>@yield('title', config('app.name', 'Library App'))</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -54,6 +54,7 @@
 <div class="page-wrapper">
     @include('layouts.navigation')
     <hr>
+    
     <div class="content-box">
         @if (session('status'))
             <div style="margin-bottom:12px;padding:12px;border-left:4px solid #2196F3;background:#e3f2fd;border-radius:4px;">
@@ -61,7 +62,7 @@
             </div>
         @endif
 
-        {{ $slot }}
+        @yield('content')
     </div>
 </div>
 </body>
