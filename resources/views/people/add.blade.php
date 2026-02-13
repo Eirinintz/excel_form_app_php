@@ -178,23 +178,63 @@ button:hover {
 </style>
 </head>
 
+<script>
+function confirmSubmit() {
+    return confirm("Είσαι σίγουρος για αυτήν την υποβολή?");
+}
+
+</script>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="{{ asset('js/autocomplete.js') }}"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const authorInput = document.getElementById("id_syggrafeas");
+    const kohaInput = document.getElementById("id_koha");
+    if (!authorInput || !kohaInput) return;
+
+    let manualEdit = false;
+
+    // Αν ο χρήστης επεξεργαστεί το koha, σταματάμε το auto-fill
+    kohaInput.addEventListener("input", function () {
+        manualEdit = true;
+    });
+
+    // Auto-fill KOHA όταν γράφεται το syggrafeas
+    authorInput.addEventListener("keyup", function () {
+        if (manualEdit) return;
+        let value = this.value.trim();
+        if (!value.includes(",")) return;
+
+        const parts = value.split(",");
+        if (parts.length !== 2) return;
+
+        const surname = parts[0].trim();
+        const name = parts[1].trim();
+        if (!surname || !name) return;
+
+        kohaInput.value = `${name} ${surname}`;
+    });
+});
+</script>
 <body>
 
 @if ($submitted)
 <div style="background: #d4edda; padding: 15px; margin-bottom: 20px; border-radius: 5px; border-left: 4px solid #28a745;">
     @if ($all_complete)
-        <strong>🎉 Success!</strong><br>
-        Record saved successfully! All incomplete records have been completed.
+        <strong>🎉 Επιτυχία!</strong><br>
+        Η εγγραφή αποθηκεύτηκε επιτυχώς! Όλες οι ελλιπείς εγγραφές συμπληρώθηκαν.
         <br><br>
         <a href="{{ route('people.incomplete') }}" style="color: #155724; text-decoration: underline;">
-            ← Back to Incomplete Records
+             ← Πίσω στις ελλιπείς εγγραφές
         </a>
     @elseif ($is_editing)
-        <strong>✅ Record Updated!</strong><br>
-        Previous record saved. Fill in the details below for the next incomplete record.
+        <strong>✅ Εγγραφή Ενημερώθηκε!</strong><br>
+        Η προηγούμενη εγγραφή αποθηκεύτηκε. Συμπληρώστε τα ελλιπή δεδομένα για την επόμενη εγγραφή.
     @else
-        <strong>✅ Success!</strong><br>
-        Record added successfully!
+        <strong>✅ Επιτυχία!</strong><br>
+         Η εγγραφή προστέθηκε επιτυχώς!
     @endif
 </div>
 @endif
@@ -315,69 +355,7 @@ button:hover {
     </form>
 </div>
 
-<script>
-function confirmSubmit() {
-    return confirm("Είσαι σίγουρος για αυτήν την υποβολή?");
-}
-</script>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="{{ asset('js/autocomplete.js') }}"></script>
-
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-
-    document.querySelectorAll("textarea").forEach(el => {
-        el.addEventListener("input", function () {
-            this.style.height = "auto";
-            this.style.height = this.scrollHeight + "px";
-        });
-    });
-
-    const msg = document.getElementById("submit-msg");
-    if (msg) {
-        setTimeout(() => {
-            msg.style.display = "none";
-
-            // 🔥 ΚΑΘΑΡΙΖΕΙ ΤΟ URL ΓΙΑ ΠΑΝΤΑ
-            window.history.replaceState(
-                {},
-                document.title,
-                window.location.pathname
-            );
-
-        }, 3000);
-    }
-});
-</script>
-
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    const authorInput = document.getElementById("id_syggrafeas");
-    const kohaInput = document.getElementById("id_koha");
-
-    if (!authorInput || !kohaInput) return;
-
-    authorInput.addEventListener("blur", function () {
-        let value = this.value.trim();
-
-        // Expected format: surname,name
-        if (!value.includes(",")) return;
-
-        let parts = value.split(",");
-
-        if (parts.length !== 2) return;
-
-        let surname = parts[0].trim();
-        let name = parts[1].trim();
-
-        if (!surname || !name) return;
-
-        // Autofill KOHA as "name surname"
-        kohaInput.value = `${name} ${surname}`;
-    });
-});
-</script>
 
 
 </body>
