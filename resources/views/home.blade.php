@@ -1,22 +1,11 @@
-@extends('layouts.app')
-
-@section('title', 'Αρχική Σελίδα')
-
-@section('content')
+<x-app-layout>
     @auth
-        <!-- Αν ο χρήστης είναι συνδεδεμένος -->
-        Γεια σου {{ auth()->user()->name }}!
+        <p>Γειά σου, {{ Auth::user()->name ?? Auth::user()->email }}!</p>
     @else
-        <!-- Αν ο χρήστης δεν είναι συνδεδεμένος -->
-        Δεν είστε συνδεδεμένος/η.
+        <p>Δεν είστε συνδεμένος/η.</p>
+        <p style="margin-top:10px;">
+            <a href="{{ route('login') }}" style="text-decoration:underline;">Σύνδεση</a> |
+            <a href="{{ route('register') }}" style="text-decoration:underline;">Εγγραφή</a>
+        </p>
     @endauth
-
-    <!-- Εμφάνιση μηνυμάτων session αν υπάρχουν -->
-    @if(session('success'))
-        {{ session('success') }}
-    @endif
-
-    @if(session('error'))
-        {{ session('error') }}
-    @endif
-@endsection
+</x-app-layout>

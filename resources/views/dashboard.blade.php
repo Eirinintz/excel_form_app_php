@@ -1,21 +1,16 @@
-@extends('layouts.app')
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Dashboard') }}
+        </h2>
+    </x-slot>
 
-@section('title', 'Dashboard')
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="p-6 text-gray-900">
+                {{ __("Είστε συνδεδεμένος/η, :name!", ['name' => auth()->user()->name]) }}
+            </div>
+        </div>
+    </div>
 
-@section('content')
-    <!-- Προσωποποιημένο μήνυμα -->
-    @if(auth()->check())
-        Γεια σου {{ auth()->user()->name }}!
-    @endif
-
-    <!-- Μηνύματα session -->
-    @if(session('success'))
-        {{ session('success') }}
-    @endif
-
-    @if(session('error'))
-        {{ session('error') }}
-    @endif
-
-    <!-- Εδώ μπορεί να μπει η φόρμα ή άλλο περιεχόμενο -->
-@endsection
+</x-app-layout>

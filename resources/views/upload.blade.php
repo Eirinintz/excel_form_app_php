@@ -1,3 +1,5 @@
+<!-- resources/views/upload.blade.php -->
+
 <form action="{{ route('people.upload') }}" method="POST" enctype="multipart/form-data">
     @csrf
     <h2>Μεταφόρτωση αρχείου Excel</h2>

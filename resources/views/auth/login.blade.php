@@ -1,112 +1,47 @@
-@extends('layouts.app')
+<x-guest-layout>
+    <!-- Session Status -->
+    <x-auth-session-status class="mb-4" :status="session('status')" />
 
-@section('title', 'Σύνδεση Προσωπικού')
-
-@section('content')
-<div class="container" style="
-    font-family: Arial, sans-serif;
-    background-color: #f5f0e6;
-    border: 2px solid #d6c9b8;
-    border-radius: 8px;
-    padding: 25px;
-    width: 350px;
-    margin: 50px auto;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-">
-
-    <h2 style="text-align:center; margin-bottom:20px; font-weight:bold;">
-        Σύνδεση Προσωπικού Βιβλιοθήκης
-    </h2>
-
-    <form method="post" id="loginForm" style="display:flex; flex-direction:column;">
+    <form method="POST" action="{{ route('login') }}">
         @csrf
 
-        <!-- Username -->
-        <label for="id_username">Όνομα χρήστη:</label>
-        <input type="text" id="id_username" name="username">
-        <p id="usernameError" style="display:none; color:red; font-size:0.9em;"></p>
-
-        <!-- Email -->
-        <label for="id_email">Email:</label>
-        <input type="email" id="id_email" name="email">
-        <p id="emailError" style="display:none; color:red; font-size:0.9em;"></p>
+        <!-- Email Address -->
+        <div>
+            <x-input-label for="email" :value="__('Email')" />
+            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
+            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+        </div>
 
         <!-- Password -->
-        <label for="id_password">Κωδικός πρόσβασης:</label>
-        <input type="password" id="id_password" name="password">
-        <p id="passwordError" style="display:none; color:red; font-size:0.9em;"></p>
+        <div class="mt-4">
+            <x-input-label for="password" :value="__('Password')" />
 
-        <button type="submit" style="
-            padding:10px;
-            background-color:#c9b18f;
-            border:2px solid #a89377;
-            border-radius:8px;
-            color:white;
-            font-weight:700;
-            cursor:pointer;
-            margin-top:15px;
-            transition: transform 0.2s ease, background 0.2s ease;
-        ">
-            Σύνδεση
-        </button>
+            <x-text-input id="password" class="block mt-1 w-full"
+                            type="password"
+                            name="password"
+                            required autocomplete="current-password" />
+
+            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+        </div>
+
+        <!-- Remember Me -->
+        <div class="block mt-4">
+            <label for="remember_me" class="inline-flex items-center">
+                <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
+                <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
+            </label>
+        </div>
+
+        <div class="flex items-center justify-end mt-4">
+            @if (Route::has('password.request'))
+                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}">
+                    {{ __('Forgot your password?') }}
+                </a>
+            @endif
+
+            <x-primary-button class="ms-3">
+                {{ __('Log in') }}
+            </x-primary-button>
+        </div>
     </form>
-
-    <p style="margin-top:20px; font-size:0.8em;">
-        ❓ Αν έχετε ξεχάσει τα στοιχεία σας ή αντιμετωπίζετε πρόβλημα,
-        επικοινωνήστε με τον διαχειριστή.
-    </p>
-
-</div>
-
-<script>
-    const usernameInput = document.getElementById('id_username');
-    const emailInput = document.getElementById('id_email');
-    const passwordInput = document.getElementById('id_password');
-
-    const usernameError = document.getElementById('usernameError');
-    const emailError = document.getElementById('emailError');
-    const passwordError = document.getElementById('passwordError');
-
-    const form = document.getElementById('loginForm');
-
-    form.addEventListener('submit', function(event) {
-        let valid = true;
-
-        // Έλεγχος ονόματος χρήστη
-        const usernameRegex = /^[A-Za-z0-9@.+-_]+$/;
-        if (!usernameRegex.test(usernameInput.value)) {
-            usernameError.textContent =
-                '❌ Μη έγκυρο όνομα χρήστη. Χρησιμοποιήστε λατινικά γράμματα, αριθμούς ή τα σύμβολα @ . + - _';
-            usernameError.style.display = 'block';
-            valid = false;
-        } else {
-            usernameError.style.display = 'none';
-        }
-
-        // Έλεγχος email
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(emailInput.value)) {
-            emailError.textContent =
-                '❌ Παρακαλώ εισάγετε έγκυρη διεύθυνση ηλεκτρονικού ταχυδρομείου.';
-            emailError.style.display = 'block';
-            valid = false;
-        } else {
-            emailError.style.display = 'none';
-        }
-
-        // Έλεγχος κωδικού
-        if (passwordInput.value.length < 8) {
-            passwordError.textContent =
-                '❌ Ο κωδικός πρόσβασης πρέπει να έχει τουλάχιστον 8 χαρακτήρες.';
-            passwordError.style.display = 'block';
-            valid = false;
-        } else {
-            passwordError.style.display = 'none';
-        }
-
-        if (!valid) {
-            event.preventDefault(); // Αποτροπή υποβολής
-        }
-    });
-</script>
-@endsection
+</x-guest-layout>
