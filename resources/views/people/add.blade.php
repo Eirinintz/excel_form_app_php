@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<x-app-layout>
 <html lang="el">
 <head>
     <meta charset="UTF-8">
@@ -68,11 +69,11 @@ body {
     padding: 0;
 }
 
-.page-wrapper {
-    max-width: 1400px;
+.page-wrapper1 {
+    max-width: 1600px;
     margin: 30px auto;
     padding: 25px;
-    background: white;
+    background: #ffffff;
     border-radius: 10px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.08);
 }
@@ -82,9 +83,9 @@ h1 {
     color: #1f3c88;
 }
 
-form {
+form#test  {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
     gap: 16px;
     width: 100%;
 }
@@ -256,10 +257,11 @@ document.addEventListener("DOMContentLoaded", function () {
 </div>
 @endif
 
-<div class="page-wrapper">
-    <h1>Νέα Εισαγωγή Βιβλίου</h1>
+<h1>Νέα Εισαγωγή Βιβλίου</h1>
+<div class="page-wrapper1">
+    
 
-    <form method="post" action="{{ route('people.add', request()->query()) }}">
+    <form id= "test" method="post" action="{{ route('people.add', request()->query()) }}">
         @csrf
 
         <div class="field-box">
@@ -360,3 +362,4 @@ document.addEventListener("DOMContentLoaded", function () {
 
 </body>
 </html>
+</x-app-layout>
