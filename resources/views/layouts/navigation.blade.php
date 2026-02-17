@@ -1,15 +1,19 @@
 <nav>
     <div class="nav-row">
         <a href="{{ route('home') }}">🏠 Αρχική</a>
-        <a href="{{ route('upload') }}">📊 Εισαγωγή αρχείου Excel</a>
-        <a href="{{ route('people.add') }}">📚 Νέα εγγραφή βιβλίου</a>
+        <a href="{{ route('upload') }}">📊 Εισαγωγή Αρχείου Excel</a>
+        <a href="{{ route('people.add') }}">📚 Νέα Εγγραφή Βιβλίου</a>
     </div>
 
     <div class="nav-row">
-        <a href="{{ route('people.index') }}">📖 Όλες οι εγγραφές</a>
-        <a href="{{ route('people.incomplete') }}">🧩 Ελλιπείς εγγραφές</a>
+        <a href="{{ route('people.index') }}">📖 Όλες οι Εγγραφές</a>
+        <a href="{{ route('people.incomplete') }}">🧩 Κενά Στοιχεία</a>
 
         @auth
+        @if(auth()->user()->is_superuser)
+            <a href="{{ route('activity-logs.index') }}">🛠 Logs</a>
+        @endif
+
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit">🚪 Αποσύνδεση</button>

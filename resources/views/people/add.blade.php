@@ -243,7 +243,7 @@ document.addEventListener("DOMContentLoaded", function () {
 <div style="margin-bottom: 20px;">
     <a href="{{ route('people.incomplete') }}"
        style="background: #6c757d; color: white; padding: 8px 16px; text-decoration: none; border-radius: 5px; display: inline-block;">
-        ← Back to Incomplete Records List
+        ← Επιστροφή στις Ελλιπείς Εγγραφές
     </a>
 </div>
 @endif
@@ -251,7 +251,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 @if ($is_editing && !$submitted)
 <div style="background: #fff3cd; padding: 15px; margin-bottom: 20px; border-radius: 5px; border-left: 4px solid #ffc107;">
-    <strong>⚠️ Επεξεργασία ελειπή δεδομένων</strong><br>
+    <strong>⚠️ Επεξεργασία ελλιπή δεδομένων</strong><br>
     Συμπληρώνετε τα ελλιπή δεδομένα για την εγγραφή #{{ $next_number }}
 </div>
 @endif

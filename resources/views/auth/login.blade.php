@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-guest-layout>
     @section('title', 'Σύνδεση Προσωπικού')
 
     <div class="container" style="
@@ -113,4 +113,4 @@
             }
         });
     </script>
-</x-app-layout>
+</x-guest-layout>

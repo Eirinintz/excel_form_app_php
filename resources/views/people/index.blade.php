@@ -206,7 +206,7 @@ function updatePagination(data){
 }
 
 function confirmDelete(ari8mos, title){
-    if (confirm(`Are you sure you want to delete record #${ari8mos}?\n\nTitle: ${title}\n\nThis action cannot be undone!`)){
+    if (confirm(`Είστε σίγουρος/η ότι θέλετε να διαγράψετε αυτή την εγγραφή; #${ari8mos}?\n\nΤίτλος: ${title}\n\nΑυτή η ενέργεια δεν μπορεί να αναιρεθεί!`)){
         const form = document.getElementById('deleteForm');
         form.action = `{{ url('/people/delete') }}/${ari8mos}`;
         form.submit();

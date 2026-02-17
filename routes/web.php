@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LibraryController;
+use App\Http\Controllers\ActivityLogController;
+
 
 Route::get('/', [LibraryController::class, 'home'])->name('home');
 
@@ -31,4 +33,8 @@ Route::middleware(['auth'])->group(function () {
 
 });
 
+Route::middleware(['admin'])->group(function () {
+    Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
+
+    });
 require __DIR__.'/auth.php';

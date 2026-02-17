@@ -107,12 +107,12 @@
 </style>
 
 
-<h1>Incomplete Records</h1>
+<h1>Κενά Στοιχεία</h1>
 
 <div class="stats">
     <h2>Στατιστικά</h2>
-    <p><strong>Συνολικά Στοιχεία:</strong> {{ $total_records }}</p>
-    <p><strong>Ελλιπής Στοιχεία:</strong> {{ $count }}</p>
+    <p><strong>Συνολικές Εγγραφές:</strong> {{ $total_records }}</p>
+    <p><strong>Ελλιπείς Εγγραφές:</strong> {{ $count }}</p>
 </div>
 
 @if($first_incomplete)
@@ -125,12 +125,12 @@
     </div>
 @else
     <div style="margin: 20px 0; padding: 10px; background: #d4edda; border-radius: 5px;">
-        ✅ All records are complete!
+        ✅ Όλες οι εγγραφές είναι πλήρεις!
     </div>
 @endif
 
 
-<h2>Sample Records (First 100)</h2>
+<h2>Δείγμα Εγγραφών (Πρώτες 100)</h2>
 <table>
     <thead>
         <tr>

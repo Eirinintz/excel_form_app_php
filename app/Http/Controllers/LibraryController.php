@@ -321,19 +321,20 @@ class LibraryController extends Controller
 
     public function incompleteRecords()
     {
-        $q = Person::query()->whereNull('syggrafeas')
+        $q = Person::query()
+            ->whereNull('syggrafeas')
             ->whereNull('koha')
-            ->whereNull('titlos')
+            //->whereNull('titlos')
             ->whereNull('ekdoths')
-            ->whereNull('ekdosh')
+            //->whereNull('ekdosh')
             ->whereNull('etosEkdoshs')
             ->whereNull('toposEkdoshs')
             ->whereNull('sxhma')
             ->whereNull('selides')
-            ->whereNull('tomos')
-            ->whereNull('ISBN')
-            ->whereNull('sthlh1')
-            ->whereNull('sthlh2')
+            //->whereNull('tomos')
+            //->whereNull('ISBN')
+            //->whereNull('sthlh1')
+            //->whereNull('sthlh2')
             ->orderBy('ari8mosEisagoghs');
 
         $count = $q->count();
