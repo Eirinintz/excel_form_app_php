@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LibraryController;
 use App\Http\Controllers\ActivityLogController;
+use App\Http\Controllers\Admin\DatabaseBackupController;
 
 
 Route::get('/', [LibraryController::class, 'home'])->name('home');
@@ -35,6 +36,16 @@ Route::middleware(['auth'])->group(function () {
 
 Route::middleware(['admin'])->group(function () {
     Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
+    Route::get('/admin/db-backup', [App\Http\Controllers\AdminController::class, 'showBackupPage'])->name('admin.db-backup');
+    Route::post('/admin/db-backup', [DatabaseBackupController::class, 'perform'])
+        ->name('admin.db-backup.perform');
+
+    Route::get('/admin/db-backup', [DatabaseBackupController::class, 'showExportForm'])
+     ->name('admin.db-backup');
+
+
+    Route::get('/admin/export/csv', [DatabaseBackupController::class, 'exportCsv'])
+     ->name('admin.export.csv');
 
     });
 require __DIR__.'/auth.php';

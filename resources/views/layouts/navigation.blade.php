@@ -12,6 +12,7 @@
         @auth
         @if(auth()->user()->is_superuser)
             <a href="{{ route('activity-logs.index') }}">🛠 Logs</a>
+            <a href="{{ route('admin.db-backup') }}">🛠 Database backup</a>
         @endif
 
             <form method="POST" action="{{ route('logout') }}">
