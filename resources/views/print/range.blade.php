@@ -45,7 +45,7 @@
             <th>Αρ. Εισαγωγής</th>
             <th>Ημ/νία Εισαγωγής</th>
             <th>Συγγραφέας</th>
-            <th>KOHA</th>
+            
             <th>Τίτλος</th>
             <th>Εκδότης</th>
             <th>Έκδοση</th>
@@ -54,6 +54,7 @@
             <th>Σχήμα</th>
             <th>Σελίδες</th>
             <th>Τόμος</th>
+            <th>Τρόπος Προμηθείας/Παραλαβής</th>
             <th>ISBN</th>
         </tr>
     </thead>
@@ -89,7 +90,7 @@ function renderRecords(records){
             <td>${record.ari8mosEisagoghs}</td>
             <td>${record.hmeromhnia_eis}</td>
             <td>${record.syggrafeas}</td>
-            <td>${record.koha}</td>
+            
             <td>${record.titlos}</td>
             <td>${record.ekdoths}</td>
             <td>${record.ekdosh}</td>
@@ -98,6 +99,7 @@ function renderRecords(records){
             <td>${record.sxhma}</td>
             <td>${record.selides}</td>
             <td>${record.tomos}</td>
+            <td>${record.troposPromPar}</td>
             <td>${record.ISBN}</td>
         `;
         fragment.appendChild(row);

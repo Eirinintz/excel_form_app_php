@@ -25,6 +25,7 @@ th { text-align: center; color: #fff; }
 </style>
 
 <div class="page-wrapper">
+    
     <h2 class="page-title">📑 Επίλυση Διπλότυπων & Κενών Εγγραφών</h2>
 
     @if($duplicate_count > 0)
@@ -43,12 +44,20 @@ th { text-align: center; color: #fff; }
     <form method="post" action="{{ route('duplicates.replace') }}">
         @csrf
 
+        <!-- 🔴 REQUIRED: JS inserts hidden inputs here -->
+        <div id="hidden-inputs"></div>
+
         <div class="action-buttons">
             <button type="button" class="btn btn-select-all" onclick="selectAllDuplicates()">☑️ Όλα τα Διπλότυπα</button>
             <button type="button" class="btn btn-select-all" onclick="selectAllInsertions()">☑️ Όλες οι Κενές</button>
 
-            <button type="submit" class="btn btn-replace" onclick="return confirm('Η ενέργεια δεν αναιρείται. Συνέχεια;')">
-                ✅ Αντικατάσταση
+            <input type="checkbox" id="replace_all_duplicates">
+            <label for="replace_all_duplicates">Αντικατάσταση όλων</label>
+
+            <button type="submit"
+                class="btn btn-replace"
+                onclick="return prepareSubmit()">
+                 ✅ Αντικατάσταση
             </button>
 
             <button type="button" class="btn btn-skip" onclick="document.getElementById('skipForm').submit();">
@@ -61,30 +70,33 @@ th { text-align: center; color: #fff; }
         @foreach($duplicates as $i => $dup)
             <div class="card">
                 <div class="record-selector">
-                    <input type="checkbox" name="duplicate_ids[]" value="{{ $dup['left']['ari8mos'] ?? '' }}" class="duplicate-checkbox">
+                    <input type="checkbox"
+                    
+                   value="{{ $dup['ari8mos'] }}"
+                    class="duplicate-checkbox">
                     <strong>Αντικατάσταση εγγραφής</strong>
                 </div>
 
-                <h3>Διπλότυπο #{{ $i+1 }} — Αρ. Εισαγωγής {{ $dup['left']['ari8mos'] ?? '' }}</h3>
+                <h3>Διπλότυπο #{{ $i+1 }} — Αρ. Εισαγωγής {{ $dup['ari8mos'] }}</h3>
 
                 <div class="table-wrapper">
                     <table class="excel-table">
                         <thead><tr><th colspan="14">Excel (Νέα Δεδομένα)</th></tr></thead>
                         <tbody><tr>
-                            <td>{{ $dup['right']['ari8mos'] ?? '-' }}</td>
-                            <td>{{ $dup['right']['hmeromhnia_eis'] ?? '-' }}</td>
-                            <td>{{ $dup['right']['syggrafeas'] ?? '-' }}</td>
-                            <td>{{ $dup['right']['koha'] ?? '-' }}</td>
-                            <td>{{ $dup['right']['titlos'] ?? '-' }}</td>
-                            <td>{{ $dup['right']['ekdoths'] ?? '-' }}</td>
-                            <td>{{ $dup['right']['ekdosh'] ?? '-' }}</td>
-                            <td>{{ $dup['right']['etosEkdoshs'] ?? '-' }}</td>
-                            <td>{{ $dup['right']['toposEkdoshs'] ?? '-' }}</td>
-                            <td>{{ $dup['right']['sxhma'] ?? '-' }}</td>
-                            <td>{{ $dup['right']['selides'] ?? '-' }}</td>
-                            <td>{{ $dup['right']['tomos'] ?? '-' }}</td>
-                            <td>{{ $dup['right']['troposPromPar'] ?? '-' }}</td>
-                            <td>{{ $dup['right']['ISBN'] ?? '-' }}</td>
+                            <td>{{ $dup['excel']['ari8mosEisagoghs'] ?? '-' }}</td>
+                            <td>{{ $dup['excel']['hmeromhnia_eis'] ?? '-' }}</td>
+                            <td>{{ $dup['excel']['syggrafeas'] ?? '-' }}</td>
+                            <td>{{ $dup['excel']['koha'] ?? '-' }}</td>
+                            <td>{{ $dup['excel']['titlos'] ?? '-' }}</td>
+                            <td>{{ $dup['excel']['ekdoths'] ?? '-' }}</td>
+                            <td>{{ $dup['excel']['ekdosh'] ?? '-' }}</td>
+                            <td>{{ $dup['excel']['etosEkdoshs'] ?? '-' }}</td>
+                            <td>{{ $dup['excel']['toposEkdoshs'] ?? '-' }}</td>
+                            <td>{{ $dup['excel']['sxhma'] ?? '-' }}</td>
+                            <td>{{ $dup['excel']['selides'] ?? '-' }}</td>
+                            <td>{{ $dup['excel']['tomos'] ?? '-' }}</td>
+                            <td>{{ $dup['excel']['troposPromPar'] ?? '-' }}</td>
+                            <td>{{ $dup['excel']['ISBN'] ?? '-' }}</td>
                         </tr></tbody>
                     </table>
                 </div>
@@ -92,22 +104,24 @@ th { text-align: center; color: #fff; }
                 <div class="table-wrapper">
                     <table class="database-table">
                         <thead><tr><th colspan="14">Database (Υπάρχοντα)</th></tr></thead>
-                        <tbody><tr>
-                            <td>{{ $dup['left']['ari8mos'] ?? '-' }}</td>
-                            <td>{{ $dup['left']['hmeromhnia_eis'] ?? '-' }}</td>
-                            <td>{{ $dup['left']['syggrafeas'] ?? '-' }}</td>
-                            <td>{{ $dup['left']['koha'] ?? '-' }}</td>
-                            <td>{{ $dup['left']['titlos'] ?? '-' }}</td>
-                            <td>{{ $dup['left']['ekdoths'] ?? '-' }}</td>
-                            <td>{{ $dup['left']['ekdosh'] ?? '-' }}</td>
-                            <td>{{ $dup['left']['etosEkdoshs'] ?? '-' }}</td>
-                            <td>{{ $dup['left']['toposEkdoshs'] ?? '-' }}</td>
-                            <td>{{ $dup['left']['sxhma'] ?? '-' }}</td>
-                            <td>{{ $dup['left']['selides'] ?? '-' }}</td>
-                            <td>{{ $dup['left']['tomos'] ?? '-' }}</td>
-                            <td>{{ $dup['left']['troposPromPar'] ?? '-' }}</td>
-                            <td>{{ $dup['left']['ISBN'] ?? '-' }}</td>
-                        </tr></tbody>
+                        <tbody>
+                        <tr>
+                            <td>{{ $dup['database']['ari8mosEisagoghs'] ?? '-' }}</td>
+                            <td>{{ $dup['database']['hmeromhnia_eis'] ?? '-' }}</td>
+                            <td>{{ $dup['database']['syggrafeas'] ?? '-' }}</td>
+                            <td>{{ $dup['database']['koha'] ?? '-' }}</td>
+                            <td>{{ $dup['database']['titlos'] ?? '-' }}</td>
+                            <td>{{ $dup['database']['ekdoths'] ?? '-' }}</td>
+                            <td>{{ $dup['database']['ekdosh'] ?? '-' }}</td>
+                            <td>{{ $dup['database']['etosEkdoshs'] ?? '-' }}</td>
+                            <td>{{ $dup['database']['toposEkdoshs'] ?? '-' }}</td>
+                            <td>{{ $dup['database']['sxhma'] ?? '-' }}</td>
+                            <td>{{ $dup['database']['selides'] ?? '-' }}</td>
+                            <td>{{ $dup['database']['tomos'] ?? '-' }}</td>
+                            <td>{{ $dup['database']['troposPromPar'] ?? '-' }}</td>
+                            <td>{{ $dup['database']['ISBN'] ?? '-' }}</td>
+                        </tr>
+                        </tbody>
                     </table>
                 </div>
             </div>
@@ -118,7 +132,7 @@ th { text-align: center; color: #fff; }
 
             @foreach($potential_insertions as $j => $ins)
                 <div class="record-selector">
-                    <input type="checkbox" name="insertion_ids[]" value="{{ $ins['ari8mos'] ?? '' }}" class="insertion-checkbox" id="ins_{{ $ins['ari8mos'] ?? $j }}">
+                    <input type="checkbox"  value="{{ $ins['excel']['ari8mos'] }}" class="insertion-checkbox" >
                     <label for="ins_{{ $ins['ari8mos'] ?? $j }}"><strong>Συμπλήρωση αυτής της κενής εγγραφής με δεδομένα από το Excel</strong></label>
                 </div>
 
@@ -178,4 +192,45 @@ function selectAllInsertions(){
     cbs.forEach(cb => cb.checked = !allChecked);
 }
 </script>
+
+<script>
+function prepareSubmit() {
+    const container = document.getElementById('hidden-inputs');
+    container.innerHTML = '';
+
+    document.querySelectorAll('.duplicate-checkbox:checked').forEach(cb => {
+        const input = document.createElement('input');
+        input.type  = 'hidden';
+        input.name  = 'duplicate_ids[]';
+        input.value = cb.value;
+        container.appendChild(input);
+    });
+
+    document.querySelectorAll('.insertion-checkbox:checked').forEach(cb => {
+        const input = document.createElement('input');
+        input.type  = 'hidden';
+        input.name  = 'insertion_ids[]';
+        input.value = cb.value;
+        container.appendChild(input);
+    });
+
+    if (document.getElementById('replace_all_duplicates')?.checked) {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'replace_all_duplicates';
+    input.value = '1';
+    container.appendChild(input);
+    }
+
+    if (
+        container.querySelectorAll('input').length === 0 &&
+        !confirm('Δεν έχετε επιλέξει εγγραφές. Συνέχεια;')
+    ) {
+        return false;
+    }
+
+    return confirm('Η ενέργεια δεν αναιρείται. Συνέχεια;');
+}
+</script>
+
 </x-app-layout>

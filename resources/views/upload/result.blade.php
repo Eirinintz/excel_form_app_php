@@ -12,8 +12,12 @@
 ">
     <h2 style="margin-bottom:20px;">Αποτελέσματα Μεταφόρτωσης</h2>
 
-    <p><strong>Εισαγωγές:</strong> {{ $added_count }}</p>
+    <p><strong>Νέες Εισαγωγές:</strong> {{ $added_count }}</p>
+
+    <p><strong>Ενημερωμένες Εγγραφές:</strong> {{ $updated_count ?? 0 }}</p>
+
     <p><strong>Διπλότυπα:</strong> {{ $duplicate_count ?? 0 }}</p>
+
     <p><strong>Παραλείφθηκαν:</strong> {{ $skipped_count }}</p>
 
     @if(($duplicate_count ?? 0) > 0)

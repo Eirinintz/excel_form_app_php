@@ -60,6 +60,7 @@
             <option value="syggrafeas" {{ $search_category==='syggrafeas' ? 'selected' : '' }}>Συγγραφέας</option>
             <option value="titlos" {{ $search_category==='titlos' ? 'selected' : '' }}>Τίτλος</option>
             <option value="ekdoths" {{ $search_category==='ekdoths' ? 'selected' : '' }}>Εκδότης</option>
+            <option value="etosEkdoshs" {{ $search_category==='etosEkdoshs' ? 'selected' : '' }}>Έτος Έκδοσης</option>
             <option value="ISBN" {{ $search_category==='ISBN' ? 'selected' : '' }}>ISBN</option>
         </select>
 

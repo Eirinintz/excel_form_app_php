@@ -4,176 +4,229 @@ namespace App\Services;
 
 use App\Models\Person;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Reader\IReadFilter;
+
+class ExcelChunkFilter implements IReadFilter
+{
+    private int $startRow = 0;
+    private int $endRow = 0;
+
+    public function setRows(int $startRow, int $chunkSize): void
+    {
+        $this->startRow = $startRow;
+        $this->endRow   = $startRow + $chunkSize;
+    }
+
+    public function readCell($column, $row, $worksheetName = ''): bool
+    {
+        return $row >= $this->startRow && $row < $this->endRow;
+    }
+}
 
 class ExcelImportService
 {
     public function import(string $pathToFile): array
     {
-        $spreadsheet = IOFactory::load($pathToFile);
-        $sheet = $spreadsheet->getActiveSheet();
+        /* =========================
+         * Reader setup
+         * ========================= */
+        $reader = IOFactory::createReaderForFile($pathToFile);
+        $reader->setReadDataOnly(true);
 
-        // Read all rows as array; assumes first row is header
-        $rows = $sheet->toArray(null, true, true, true);
-        if (count($rows) < 2) {
-            return [
-                'added' => 0,
-                'skipped_count' => 0,
-                'duplicates' => [],
-                'potential_insertions' => [],
-            ];
-        }
+        $chunkSize = 500;
+        $startRow  = 1;
 
-        $headerRow = array_shift($rows);
+        $filter = new ExcelChunkFilter();
+        $reader->setReadFilter($filter);
+
+        /* =========================
+         * State
+         * ========================= */
         $headers = [];
-        foreach ($headerRow as $col => $name) {
-            $headers[$col] = trim((string)$name);
-        }
+        $firstRow = true;
 
-        $existingIds = Person::query()->pluck('ari8mosEisagoghs')->all();
-        $existingIdsSet = array_fill_keys($existingIds, true);
+        $batch = [];
+        $batchSize = 500;
+
         $seenInFile = [];
 
+        // IMPORTANT: lightweight duplicates only
         $duplicates = [];
         $potentialInsertions = [];
-        $newRecords = [];
+
+        $addedCount = 0;
         $skipped = 0;
 
-        $rowNum = 1;
-        foreach ($rows as $row) {
-            $rowNum++;
+        /* =========================
+         * Count rows (safe)
+         * ========================= */
+        $infoReader = IOFactory::createReaderForFile($pathToFile);
+        $infoReader->setReadDataOnly(true);
 
-            $get = function (string $header) use ($headers, $row) {
-                foreach ($headers as $col => $name) {
-                    if ($name === $header) {
-                        return $row[$col] ?? null;
-                    }
+        $infoSpreadsheet = $infoReader->load($pathToFile);
+        $totalRows = $infoSpreadsheet->getActiveSheet()->getHighestRow();
+
+        $infoSpreadsheet->disconnectWorksheets();
+        unset($infoSpreadsheet, $infoReader);
+        gc_collect_cycles();
+
+        /* =========================
+         * Main loop
+         * ========================= */
+        do {
+            $filter->setRows($startRow, $chunkSize);
+
+            $spreadsheet = $reader->load($pathToFile);
+            $sheet = $spreadsheet->getActiveSheet();
+
+            foreach ($sheet->getRowIterator() as $row) {
+
+                $cellIterator = $row->getCellIterator();
+                $cellIterator->setIterateOnlyExistingCells(false);
+
+                $rowData = [];
+                foreach ($cellIterator as $cell) {
+                    $rowData[$cell->getColumn()] = $cell->getValue();
                 }
-                return null;
-            };
 
-            $rawAri8mos = $this->cleanAri8mos($get('ΑΡΙΘΜΟΣ ΕΙΣΑΓΩΓΗΣ'));
-            $syggrafeas = $this->clean($get('ΣΥΓΓΡΑΦΕΑΣ'));
-            $koha = $this->clean($get('ΣΥΓΓΡΑΦΕΑΣ KOHA'));
-
-            if (($koha === null || $koha === '') && $syggrafeas) {
-                $koha = $this->generateKohaFromAuthor($syggrafeas);
-            }
-
-            $ari8mos = null;
-            try {
-                $ari8mos = $rawAri8mos !== null ? (int)$rawAri8mos : null;
-            } catch (\Throwable $e) {
-                $ari8mos = null;
-            }
-
-            if (!$ari8mos) {
-                $skipped++;
-                continue;
-            }
-
-            if (isset($seenInFile[$ari8mos])) {
-                $skipped++;
-                continue;
-            }
-            $seenInFile[$ari8mos] = true;
-
-            $excelData = [
-                'ari8mosEisagoghs' => $ari8mos,
-                'hmeromhnia_eis' => $this->cleanNumericOrText($get('ΗΜΕΡΟΜΗΝΙΑ ΕΙΣΑΓΩΓΗΣ')),
-                'syggrafeas' => $this->clean($get('ΣΥΓΓΡΑΦΕΑΣ')),
-                'koha' => $koha,
-                'titlos' => $this->clean($get('ΤΙΤΛΟΣ')),
-                'ekdoths' => $this->clean($get('ΕΚΔΟΤΗΣ')),
-                'ekdosh' => $this->clean($get('ΕΚΔΟΣΗ')),
-                'etosEkdoshs' => $this->cleanNumericOrText($get('ΕΤΟΣ ΕΚΔΟΣΗΣ')),
-                'toposEkdoshs' => $this->clean($get('ΤΟΠΟΣ  ΕΚΔΟΣΗΣ')),
-                'sxhma' => $this->clean($get('ΣΧΗΜΑ')),
-                'selides' => $this->clean($get('ΣΕΛΙΔΕΣ')),
-                'tomos' => $this->clean($get('ΤΟΜΟΣ')),
-                'troposPromPar' => $this->clean($get('ΤΡΟΠΟΣ ΠΡΟΜΗΘΕΙΑΣ ΠΑΡΑΤΗΡΗΣΕΙΣ')),
-                'ISBN' => $this->cleanNumericOrText($get('ISBN')),
-                'sthlh1' => $this->cleanNumericOrText($get('Στήλη1')),
-                'sthlh2' => $this->cleanNumericOrText($get('Στήλη2')),
-            ];
-
-            if (isset($existingIdsSet[$ari8mos])) {
-                $existing = Person::query()->where('ari8mosEisagoghs', $ari8mos)->first();
-
-                // Safety: if it somehow doesn't exist, treat as new
-                if (!$existing) {
-                    $newRecords[] = $excelData;
-                    $existingIdsSet[$ari8mos] = true;
+                /* =========================
+                 * Header row
+                 * ========================= */
+                if ($firstRow) {
+                    foreach ($rowData as $col => $name) {
+                        $headers[$col] = preg_replace(
+                            '/\s+/u',
+                            ' ',
+                            trim(str_replace("\u{00A0}", ' ', (string) $name))
+                        );
+                    }
+                    $firstRow = false;
                     continue;
                 }
 
-                $isEmpty = !$existing->syggrafeas
-                    && !$existing->koha
-                    && !$existing->titlos
-                    && !$existing->ekdoths
-                    && !$existing->ekdosh
-                    && !$existing->etosEkdoshs
-                    && !$existing->toposEkdoshs
-                    && !$existing->sxhma
-                    && !$existing->selides
-                    && !$existing->tomos
-                    && !$existing->ISBN
-                    && !$existing->sthlh1
-                    && !$existing->sthlh2;
+                /* =========================
+                 * Header getter
+                 * ========================= */
+                $get = function (string $header) use ($headers, $rowData) {
+                    $header = preg_replace(
+                        '/\s+/u',
+                        ' ',
+                        trim(str_replace("\u{00A0}", ' ', $header))
+                    );
 
-                if ($isEmpty) {
-                    $potentialInsertions[] = [
+                    foreach ($headers as $col => $name) {
+                        if ($name === $header) {
+                            return $rowData[$col] ?? null;
+                        }
+                    }
+                    return null;
+                };
+
+                /* =========================
+                 * Required key
+                 * ========================= */
+                $rawAri8mos = $this->cleanAri8mos($get('ΑΡΙΘΜΟΣ ΕΙΣΑΓΩΓΗΣ'));
+                if (!$rawAri8mos) {
+                    $skipped++;
+                    continue;
+                }
+
+                $ari8mos = (int) $rawAri8mos;
+
+                /* =========================
+                 * File duplicates
+                 * ========================= */
+                if (isset($seenInFile[$ari8mos])) {
+                    $skipped++;
+                    $duplicates[] = [
+                        'type'    => 'file',
                         'ari8mos' => $ari8mos,
-                        'database' => [
-                            'ari8mos' => $existing->ari8mosEisagoghs,
-                            'hmeromhnia_eis' => $existing->hmeromhnia_eis,
-                        ],
-                        'excel' => $excelData,
+                        'row'     => $row->getRowIndex(),
                     ];
                     continue;
                 }
+                $seenInFile[$ari8mos] = true;
 
-                $duplicates[] = [
-                    'left' => [
-                        'ari8mos' => $existing->ari8mosEisagoghs,
-                        'hmeromhnia_eis' => $existing->hmeromhnia_eis,
-                        'syggrafeas' => $existing->syggrafeas,
-                        'koha' => $existing->koha,
-                        'titlos' => $existing->titlos,
-                        'ekdoths' => $existing->ekdoths,
-                        'ekdosh' => $existing->ekdosh,
-                        'etosEkdoshs' => $existing->etosEkdoshs,
-                        'toposEkdoshs' => $existing->toposEkdoshs,
-                        'sxhma' => $existing->sxhma,
-                        'selides' => $existing->selides,
-                        'tomos' => $existing->tomos,
-                        'troposPromPar' => $existing->troposPromPar,
-                        'ISBN' => $existing->ISBN,
-                        'sthlh1' => $existing->sthlh1,
-                        'sthlh2' => $existing->sthlh2,
-                    ],
-                    'right' => array_merge(['ari8mos' => $ari8mos], $excelData),
+                /* =========================
+                 * Build Excel data
+                 * ========================= */
+                $syggrafeas = $this->clean($get('ΣΥΓΓΡΑΦΕΑΣ'));
+                $koha = $this->clean($get('ΣΥΓΓΡΑΦΕΑΣ KOHA'))
+                    ?? $this->generateKohaFromAuthor($syggrafeas);
+
+                $excelData = [
+                    'ari8mosEisagoghs' => $ari8mos,
+                    'hmeromhnia_eis'   => $this->cleanNumericOrText($get('ΗΜΕΡΟΜΗΝΙΑ ΕΙΣΑΓΩΓΗΣ')),
+                    'syggrafeas'       => $syggrafeas,
+                    'koha'             => $koha,
+                    'titlos'           => $this->clean($get('ΤΙΤΛΟΣ')),
+                    'ekdoths'          => $this->clean($get('ΕΚΔΟΤΗΣ')),
+                    'ekdosh'           => $this->clean($get('ΕΚΔΟΣΗ')),
+                    'etosEkdoshs'      => $this->cleanNumericOrText($get('ΕΤΟΣ ΕΚΔΟΣΗΣ')),
+                    'toposEkdoshs'     => $this->clean($get('ΤΟΠΟΣ  ΕΚΔΟΣΗΣ')),
+                    'sxhma'            => $this->clean($get('ΣΧΗΜΑ')),
+                    'selides'          => $this->clean($get('ΣΕΛΙΔΕΣ')),
+                    'tomos'            => $this->clean($get('ΤΟΜΟΣ')),
+                    'troposPromPar'    => $this->clean($get('ΤΡΟΠΟΣ ΠΡΟΜΗΘΕΙΑΣ ΠΑΡΑΤΗΡΗΣΕΙΣ')),
+                    'ISBN'             => $this->cleanNumericOrText($get('ISBN')),
+                    'sthlh1'           => $this->cleanNumericOrText($get('Στήλη1')),
+                    'sthlh2'           => $this->cleanNumericOrText($get('Στήλη2')),
                 ];
-                continue;
+
+                /* =========================
+                 * DB duplicates (LIGHTWEIGHT)
+                 * ========================= */
+                if ($person = Person::where('ari8mosEisagoghs', $ari8mos)->first()) {
+                    $skipped++;
+                    $duplicates[] = [
+                        'type'    => 'database',
+                        'ari8mos' => $ari8mos,
+                        'excel'   => $excelData, // OK: only for duplicates
+                        'database' => $person->toArray(),
+                    ];
+                    unset($excelData);
+                    continue;
+                }
+
+                /* =========================
+                 * Batch insert
+                 * ========================= */
+                $batch[] = $excelData;
+                $addedCount++;
+
+                if (count($batch) >= $batchSize) {
+                    Person::insert($batch);
+                    $batch = [];
+                }
+
+                unset($excelData);
             }
 
-            $newRecords[] = $excelData;
-            $existingIdsSet[$ari8mos] = true;
+            $spreadsheet->disconnectWorksheets();
+            unset($spreadsheet, $sheet, $rowData);
+            gc_collect_cycles();
+
+            $startRow += $chunkSize;
+
+        } while ($startRow <= $totalRows);
+
+        if (!empty($batch)) {
+            Person::insert($batch);
         }
 
-        // Bulk insert new records
-        if (!empty($newRecords)) {
-            Person::query()->insert($newRecords);
-        }
-
+        /* =========================
+         * Result
+         * ========================= */
         return [
-            'added' => count($newRecords),
-            'skipped_count' => $skipped,
-            'duplicates' => $duplicates,
+            'added'                => $addedCount,
+            'skipped_count'        => $skipped,
+            'duplicates'           => $duplicates,
             'potential_insertions' => $potentialInsertions,
         ];
     }
 
-    private function clean($value): ?string
+
+     private function clean($value): ?string
     {
         if ($value === null) return null;
         $v = trim((string)$value);
