@@ -276,18 +276,18 @@ public function resolveDuplicates()
 
     /** ---------------- INSERTIONS ---------------- */
     foreach ($potential as $ins) {
-        $ari8mos = (int) ($ins['excel']['ari8mosEisagoghs'] ?? 0);
-        if (!$ari8mos || !in_array($ari8mos, $selectedIns, true)) {
-            continue;
-        }
 
-        $person = Person::where('ari8mosEisagoghs', $ari8mos)->first();
-        if (!$person) continue;
+    $ari8mos = (int) ($ins['ari8mos'] ?? 0);
 
-        $person->fill($ins['excel']);
-        $person->save();
-        $inserted++;
+    if (!$ari8mos || !in_array($ari8mos, $selectedIns, true)) {
+        continue;
     }
+
+    Person::where('ari8mosEisagoghs', $ari8mos)
+        ->update($ins['excel']);
+
+    $inserted++;
+}
 
         // 🔴 STEP 3: Replace ALL duplicates (no checkboxes)
     if ($request->boolean('replace_all_duplicates')) {
@@ -295,13 +295,18 @@ public function resolveDuplicates()
         $updated = 0;
 
         foreach ($duplicates as $dup) {
-            $ari8mos = (int) $dup['ari8mos'];
 
-            Person::where('ari8mosEisagoghs', $ari8mos)
-                ->update($dup['excel']);
+    if (($dup['type'] ?? null) !== 'database') {
+        continue;
+    }
 
-            $updated++;
-        }
+    $ari8mos = (int) $dup['ari8mos'];
+
+    Person::where('ari8mosEisagoghs', $ari8mos)
+        ->update($dup['excel']);
+
+    $updated++;
+}
 
         // Log
         UploadLog::create([
@@ -365,8 +370,9 @@ public function resolveDuplicates()
     {
         $q = Person::query()
             ->whereNull('syggrafeas')
+            //->whereNull('hmeromhnia_eis')
             ->whereNull('koha')
-            //->whereNull('titlos')
+            ->whereNull('titlos')
             ->whereNull('ekdoths')
             //->whereNull('ekdosh')
             ->whereNull('etosEkdoshs')
@@ -508,7 +514,7 @@ public function resolveDuplicates()
     {
         return Person::query()->whereNull('syggrafeas')
             ->whereNull('koha')
-            ->whereNull('hmeromhnia_eis')
+            //->whereNull('hmeromhnia_eis')
             ->whereNull('titlos')
             ->whereNull('ekdoths')
             ->whereNull('ekdosh')

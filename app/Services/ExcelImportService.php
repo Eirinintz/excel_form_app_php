@@ -176,15 +176,29 @@ class ExcelImportService
                 /* =========================
                  * DB duplicates (LIGHTWEIGHT)
                  * ========================= */
-                if ($person = Person::where('ari8mosEisagoghs', $ari8mos)->first()) {
+                $existing = Person::where('ari8mosEisagoghs', $ari8mos)->first();
+
+                if ($existing) {
+
+                    if ($this->isIncompletePerson($existing)) {
+                        // ✅ POTENTIAL INSERTION
+                        $potentialInsertions[] = [
+                            'type'   => 'potential',
+                            'ari8mos'=> $ari8mos,
+                            'excel' => $excelData,
+                            'database'    => $existing->toArray(),
+                        ];
+                    } else {
+                        // 🔴 REAL DUPLICATE
+                        $duplicates[] = [
+                            'type'   => 'database',
+                            'ari8mos'=> $ari8mos,
+                            'excel' => $excelData,
+                            'database'    => $existing->toArray(),
+                        ];
+                    }
+
                     $skipped++;
-                    $duplicates[] = [
-                        'type'    => 'database',
-                        'ari8mos' => $ari8mos,
-                        'excel'   => $excelData, // OK: only for duplicates
-                        'database' => $person->toArray(),
-                    ];
-                    unset($excelData);
                     continue;
                 }
 
@@ -277,4 +291,21 @@ class ExcelImportService
         $res = trim($name . ' ' . $surname . ' ' . $extra);
         return $res === '' ? null : $res;
     }
+
+    private function isIncompletePerson(Person $person): bool
+    {
+        return
+            is_null($person->syggrafeas) &&
+            is_null($person->koha) &&
+            //is_null($person->hmeromhnia_eis) &&
+            is_null($person->titlos) &&
+            is_null($person->ekdoths) &&
+            is_null($person->ekdosh) &&
+            is_null($person->etosEkdoshs) &&
+            is_null($person->toposEkdoshs) &&
+            is_null($person->sxhma) &&
+            is_null($person->selides) &&
+            is_null($person->tomos);
+    }
+
 }

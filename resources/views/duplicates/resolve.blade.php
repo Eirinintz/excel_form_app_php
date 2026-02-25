@@ -132,7 +132,11 @@ th { text-align: center; color: #fff; }
 
             @foreach($potential_insertions as $j => $ins)
                 <div class="record-selector">
-                    <input type="checkbox"  value="{{ $ins['excel']['ari8mos'] }}" class="insertion-checkbox" >
+                    
+                    <input type="checkbox"
+                        value="{{ $ins['ari8mos'] }}"
+                        class="insertion-checkbox">
+
                     <label for="ins_{{ $ins['ari8mos'] ?? $j }}"><strong>Συμπλήρωση αυτής της κενής εγγραφής με δεδομένα από το Excel</strong></label>
                 </div>
 
@@ -142,7 +146,7 @@ th { text-align: center; color: #fff; }
                 <table class="database-table">
                     <thead><tr><th>Αρ. Εισαγωγής</th><th>Ημ/νία Εισαγωγής</th></tr></thead>
                     <tbody><tr>
-                        <td>{{ $ins['database']['ari8mos'] ?? '-' }}</td>
+                        <td>{{ $ins['database']['ari8mosEisagoghs'] ?? '-' }}</td>
                         <td>{{ $ins['database']['hmeromhnia_eis'] ?? '-' }}</td>
                     </tr></tbody>
                 </table>
