@@ -1,6 +1,6 @@
 <x-app-layout>
 <style>
-.page-wrapper { max-width: 1400px; margin: 0 auto; padding: 20px; }
+.page-wrapper1 { max-width: 1400px; margin: 0 auto; padding: 20px; }
 .page-title { text-align: center; margin-bottom: 30px; }
 .info-box, .insertion-box { max-width: 900px; margin: 20px auto; padding: 15px 20px; border-radius: 8px; text-align: center; }
 .info-box { background: #fff3cd; border-left: 5px solid #ffc107; }
@@ -11,6 +11,11 @@
 .btn-skip { background:#dc3545; color:#fff; }
 .btn-home { background:#17a2b8; color:#fff; }
 .btn-select-all { background:#f0ad4e; color:#fff; }
+.btn-select-all.active {
+    background-color: #f59e0b; /* same orange */
+    box-shadow: inset 0 0 0 2px rgba(255,255,255,0.4);
+    font-weight: bold;
+}
 .btn:hover { opacity:0.9; }
 .card { background:#fff; border-radius: 10px; padding: 25px; margin: 40px 0; box-shadow: 0 4px 12px rgba(0,0,0,0.08); text-align:left; }
 .table-wrapper { overflow-x: auto; }
@@ -24,7 +29,7 @@ th { text-align: center; color: #fff; }
 .record-selector input { transform: scale(1.4); margin-right: 8px; }
 </style>
 
-<div class="page-wrapper">
+<div class="page-wrapper1">
     
     <h2 class="page-title">📑 Επίλυση Διπλότυπων & Κενών Εγγραφών</h2>
 
@@ -51,8 +56,7 @@ th { text-align: center; color: #fff; }
             <button type="button" class="btn btn-select-all" onclick="selectAllDuplicates()">☑️ Όλα τα Διπλότυπα</button>
             <button type="button" class="btn btn-select-all" onclick="selectAllInsertions()">☑️ Όλες οι Κενές</button>
 
-            <input type="checkbox" id="replace_all_duplicates">
-            <label for="replace_all_duplicates">Αντικατάσταση όλων</label>
+           
 
             <button type="submit"
                 class="btn btn-replace"
@@ -64,13 +68,14 @@ th { text-align: center; color: #fff; }
                 ⏭️ Παράλειψη
             </button>
 
-            <a href="{{ route('home') }}"><button type="button" class="btn btn-home">🏠 Αρχική</button></a>
+            
         </div>
 
         @foreach($duplicates as $i => $dup)
             <div class="card">
                 <div class="record-selector">
                     <input type="checkbox"
+                    name="duplicate_ids[]"
                     
                    value="{{ $dup['ari8mos'] }}"
                     class="duplicate-checkbox">
@@ -131,51 +136,76 @@ th { text-align: center; color: #fff; }
             <h2 style="color:#2d7a2d;">✨ Κενές Εγγραφές για Συμπλήρωση ({{ $insertion_count }})</h2>
 
             @foreach($potential_insertions as $j => $ins)
+            <div class="card insertion-card">
+
                 <div class="record-selector">
-                    
                     <input type="checkbox"
+                        name="insertion_ids[]"
                         value="{{ $ins['ari8mos'] }}"
                         class="insertion-checkbox">
-
-                    <label for="ins_{{ $ins['ari8mos'] ?? $j }}"><strong>Συμπλήρωση αυτής της κενής εγγραφής με δεδομένα από το Excel</strong></label>
+                    <strong>Συμπλήρωση κενής εγγραφής</strong>
                 </div>
 
-                <h3 style="margin-top:30px;color:#2d7a2d;">Κενή Εγγραφή #{{ $j+1 }} - Αρ. Εισαγωγής: {{ $ins['ari8mos'] ?? '' }}</h3>
+                <h3 style="color:#2d7a2d;">
+                    Κενή Εγγραφή #{{ $j+1 }} — Αρ. Εισαγωγής {{ $ins['ari8mos'] }}
+                </h3>
 
-                <h4 style="color:#8a1f1f;">Database Data (Κενή Εγγραφή)</h4>
-                <table class="database-table">
-                    <thead><tr><th>Αρ. Εισαγωγής</th><th>Ημ/νία Εισαγωγής</th></tr></thead>
-                    <tbody><tr>
-                        <td>{{ $ins['database']['ari8mosEisagoghs'] ?? '-' }}</td>
-                        <td>{{ $ins['database']['hmeromhnia_eis'] ?? '-' }}</td>
-                    </tr></tbody>
-                </table>
+                {{-- Excel --}}
+                <div class="table-wrapper">
+                    <table class="excel-table">
+                        <thead>
+                            <tr><th colspan="14">Excel (Νέα Δεδομένα)</th></tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>{{ $ins['excel']['ari8mosEisagoghs'] ?? '-' }}</td>
+                            <td>{{ $ins['excel']['hmeromhnia_eis'] ?? '-' }}</td>
+                            <td>{{ $ins['excel']['syggrafeas'] ?? '-' }}</td>
+                            <td>{{ $ins['excel']['koha'] ?? '-' }}</td>
+                            <td>{{ $ins['excel']['titlos'] ?? '-' }}</td>
+                            <td>{{ $ins['excel']['ekdoths'] ?? '-' }}</td>
+                            <td>{{ $ins['excel']['ekdosh'] ?? '-' }}</td>
+                            <td>{{ $ins['excel']['etosEkdoshs'] ?? '-' }}</td>
+                            <td>{{ $ins['excel']['toposEkdoshs'] ?? '-' }}</td>
+                            <td>{{ $ins['excel']['sxhma'] ?? '-' }}</td>
+                            <td>{{ $ins['excel']['selides'] ?? '-' }}</td>
+                            <td>{{ $ins['excel']['tomos'] ?? '-' }}</td>
+                            <td>{{ $ins['excel']['troposPromPar'] ?? '-' }}</td>
+                            <td>{{ $ins['excel']['ISBN'] ?? '-' }}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
 
-                <h4 style="color:#2d7a2d;">Excel Data (Νέα Δεδομένα για Συμπλήρωση)</h4>
-                <table class="insertion-table">
-                    <thead><tr>
-                        <th>Αρ. Εισαγωγής</th><th>Ημ/νία Εισαγωγής</th><th>Συγγραφέας</th><th>KOHA</th><th>Τίτλος</th><th>Εκδότης</th><th>Έκδοση</th><th>Έτος Έκδοσης</th><th>Τόπος Έκδοσης</th><th>Σχήμα</th><th>Σελίδες</th><th>Τόμος</th><th>Τρόπος Προμήθειας</th><th>ISBN</th>
-                    </tr></thead>
-                    <tbody><tr>
-                        <td>{{ $ins['excel']['ari8mosEisagoghs'] ?? '-' }}</td>
-                        <td>{{ $ins['excel']['hmeromhnia_eis'] ?? '-' }}</td>
-                        <td>{{ $ins['excel']['syggrafeas'] ?? '-' }}</td>
-                        <td>{{ $ins['excel']['koha'] ?? '-' }}</td>
-                        <td>{{ $ins['excel']['titlos'] ?? '-' }}</td>
-                        <td>{{ $ins['excel']['ekdoths'] ?? '-' }}</td>
-                        <td>{{ $ins['excel']['ekdosh'] ?? '-' }}</td>
-                        <td>{{ $ins['excel']['etosEkdoshs'] ?? '-' }}</td>
-                        <td>{{ $ins['excel']['toposEkdoshs'] ?? '-' }}</td>
-                        <td>{{ $ins['excel']['sxhma'] ?? '-' }}</td>
-                        <td>{{ $ins['excel']['selides'] ?? '-' }}</td>
-                        <td>{{ $ins['excel']['tomos'] ?? '-' }}</td>
-                        <td>{{ $ins['excel']['troposPromPar'] ?? '-' }}</td>
-                        <td>{{ $ins['excel']['ISBN'] ?? '-' }}</td>
-                    </tr></tbody>
-                </table>
+                {{-- Database (empty record) --}}
+                <div class="table-wrapper">
+                    <table class="database-table empty-database">
+                        <thead>
+                            <tr><th colspan="14">Database (Κενή Εγγραφή)</th></tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>{{ $ins['database']['ari8mosEisagoghs'] ?? '-' }}</td>
+                            <td>{{ $ins['database']['hmeromhnia_eis'] ?? '-' }}</td>
+                            <td>{{ $ins['database']['syggrafeas'] ?? '-' }}</td>
+                            <td>{{ $ins['database']['koha'] ?? '-' }}</td>
+                            <td>{{ $ins['database']['titlos'] ?? '-' }}</td>
+                            <td>{{ $ins['database']['ekdoths'] ?? '-' }}</td>
+                            <td>{{ $ins['database']['ekdosh'] ?? '-' }}</td>
+                            <td>{{ $ins['database']['etosEkdoshs'] ?? '-' }}</td>
+                            <td>{{ $ins['database']['toposEkdoshs'] ?? '-' }}</td>
+                            <td>{{ $ins['database']['sxhma'] ?? '-' }}</td>
+                            <td>{{ $ins['database']['selides'] ?? '-' }}</td>
+                            <td>{{ $ins['database']['tomos'] ?? '-' }}</td>
+                            <td>{{ $ins['database']['troposPromPar'] ?? '-' }}</td>
+                            <td>{{ $ins['database']['ISBN'] ?? '-' }}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
 
-                <hr style="margin:40px 0;border:1px solid #ccc;">
-            @endforeach
+            </div>
+        @endforeach
         @endif
     </form>
 
@@ -234,6 +264,23 @@ function prepareSubmit() {
     }
 
     return confirm('Η ενέργεια δεν αναιρείται. Συνέχεια;');
+}
+</script>
+
+<script>
+function toggleReplaceAll() {
+    const checkbox = document.getElementById('replace_all_duplicates');
+    const btn = document.getElementById('replaceAllBtn');
+
+    checkbox.checked = !checkbox.checked;
+
+    if (checkbox.checked) {
+        btn.innerHTML = '☑️ Αντικατάσταση όλων';
+        btn.classList.add('active');
+    } else {
+        btn.innerHTML = '⬜ Αντικατάσταση όλων';
+        btn.classList.remove('active');
+    }
 }
 </script>
 

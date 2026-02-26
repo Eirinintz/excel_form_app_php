@@ -16,11 +16,8 @@
             Backup Database
         </button>
     </form>
-
-    <a href="{{ route('admin.export.csv', 'people') }}" 
-   class="btn btn-success">
-    Download Books table as CSV
-    </a>
+<br>
+    
 
     
 
@@ -33,7 +30,7 @@
         @endforeach
     </select>
 
-    <button type="submit">Export CSV</button>
+    <button type="submit" style="background:#816ef7; color:white; padding:10px 20px; border:none; border-radius:5px; cursor:pointer;">Export CSV</button>
     </form>
 
 
