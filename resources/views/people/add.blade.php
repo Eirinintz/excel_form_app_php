@@ -8,8 +8,21 @@
 <style>
 
 /* Container under the input */
-#title-suggestions {
-    border: 1px solid #ccc;
+#etosEkdoshs-suggestions {
+    /*border: 1px solid #ccc;*/
+    max-height: 200px;
+    overflow: auto;
+    width: 100%;
+    background-color: white;
+    position: absolute; /* allows it to float over the form */
+    z-index: 1000;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    padding: 0;
+    margin: 0;
+}
+
+#syggrafeas-suggestions {
+    /*border: 1px solid #ccc;*/
     max-height: 200px;
     overflow: auto;
     width: 100%;
@@ -34,7 +47,7 @@
 
 
 #ekdoths-suggestions {
-    border: 1px solid #ccc;
+    /*border: 1px solid #ccc;*/
     max-height: 200px;
     overflow: auto;
     width: 100%;
@@ -277,6 +290,7 @@ document.addEventListener("DOMContentLoaded", function () {
         <div class="field-box">
             <label>ΣΥΓΓΡΑΦΕΑΣ</label>
             <textarea id="id_syggrafeas" name="syggrafeas" rows="1">{{ old('syggrafeas', $person?->syggrafeas ?? '') }}</textarea>
+            <div id="syggrafeas-suggestions" class="autocomplete-box"></div>
         </div>
 
         <div class="field-box">
@@ -287,7 +301,7 @@ document.addEventListener("DOMContentLoaded", function () {
         <div class="field-box">
             <label>ΤΙΤΛΟΣ</label>
             <textarea id="id_titlos" name="titlos" rows="1">{{ old('titlos', $person?->titlos ?? '') }}</textarea>
-            <div id="title-suggestions" class="autocomplete-box"></div>
+            
         </div>
 
         <div class="field-box">
@@ -304,6 +318,7 @@ document.addEventListener("DOMContentLoaded", function () {
         <div class="field-box">
             <label>ΕΤΟΣ ΕΚΔΟΣΗΣ</label>
             <input id="id_etosEkdoshs" type="text" name="etosEkdoshs" value="{{ old('etosEkdoshs', $person?->etosEkdoshs ?? '') }}">
+            <div id="etosEkdoshs-suggestions" class="autocomplete-box"></div>
         </div>
 
         <div class="field-box">
@@ -347,7 +362,7 @@ document.addEventListener("DOMContentLoaded", function () {
         </div>
 
         <div class="submit-wrapper">
-            <a href="{{ route('home') }}" class="btn-secondary">Αρχική</a>
+            
             <button type="submit" onclick="return confirmSubmit();">Υποβολή</button>
 
             @if(request()->query('submitted') == '1')

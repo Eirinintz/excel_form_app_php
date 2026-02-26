@@ -22,8 +22,9 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/incomplete-records', [LibraryController::class, 'incompleteRecords'])->name('people.incomplete');
 
-    Route::get('/ajax/autocomplete/title', [LibraryController::class, 'autocompleteTitle'])->name('autocomplete.title');
+    Route::get('/ajax/autocomplete/syggrafeas', [LibraryController::class, 'autocompletesyggrafeas'])->name('autocomplete.syggrafeas');
     Route::get('/ajax/autocomplete/ekdoths', [LibraryController::class, 'autocompleteEkdoths'])->name('autocomplete.ekdoths');
+    Route::get('/ajax/autocomplete/etosEkdoshs', [LibraryController::class, 'autocompleteEtosEkdoshs'])->name('autocomplete.etosEkdoshs');
 
     Route::get('/print-range', [LibraryController::class, 'printRange'])->name('print.range');
     Route::get('/print-range/data', [LibraryController::class, 'printRangeData'])->name('print.range.data');

@@ -22,6 +22,7 @@ class LibraryController extends Controller
     {
         $qs = Person::query()
             ->whereNotNull('ari8mosEisagoghs')
+            ->orderByRaw('titlos IS NULL') 
             ->orderBy('ari8mosEisagoghs');
 
         $search = trim((string)$request->query('search', ''));
@@ -397,14 +398,35 @@ public function resolveDuplicates()
         ]);
     }
 
-    public function autocompleteTitle(Request $request)
+    public function autocompletesyggrafeas(Request $request)
     {
         $q = (string)$request->query('q', '');
         $results = Person::query()
-            ->where('titlos', 'like', "%{$q}%")
+            ->where('syggrafeas', 'like', $q . '%')
             ->distinct()
-            ->limit(10)
-            ->pluck('titlos')
+            ->limit(5)
+            ->pluck('syggrafeas')
+            ->values();
+
+        return response()->json(['results' => $results]);
+    }
+
+    public function autocompleteEtosEkdoshs(Request $request)
+    {
+         $q = (string) $request->query('q', '');
+
+        // Allow only digits (optional but recommended)
+        if ($q === '' || !ctype_digit($q)) {
+            return response()->json(['results' => []]);
+        }
+
+        $results = Person::query()
+            ->where('etosEkdoshs', 'like', $q . '%')
+            ->whereNotNull('etosEkdoshs')
+            ->orderBy('etosEkdoshs')
+            ->distinct()
+            ->limit(5)
+            ->pluck('etosEkdoshs')
             ->values();
 
         return response()->json(['results' => $results]);
@@ -414,9 +436,9 @@ public function resolveDuplicates()
     {
         $q = (string)$request->query('q', '');
         $results = Person::query()
-            ->where('ekdoths', 'like', "%{$q}%")
+            ->where('ekdoths', 'like', $q . '%')
             ->distinct()
-            ->limit(10)
+            ->limit(5)
             ->pluck('ekdoths')
             ->values();
 

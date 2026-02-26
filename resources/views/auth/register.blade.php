@@ -21,7 +21,7 @@
 
             <!-- Username -->
             <label for="id_username">Όνομα χρήστη:</label>
-            <input type="text" id="id_username" name="username" value="{{ old('username') }}">
+            <input type="text" id="id_username" name="name" value="{{ old('username') }}">
             @error('username')
                 <p style="color:red; font-size:0.9em;">{{ $message }}</p>
             @enderror

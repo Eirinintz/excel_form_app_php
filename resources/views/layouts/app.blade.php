@@ -12,6 +12,23 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <style>
+
+        @if (session('success'))
+            <div style="
+                margin: 20px auto;
+                padding: 12px 16px;
+                max-width: 500px;
+                background-color: #d4edda;
+                color: #155724;
+                border: 1px solid #c3e6cb;
+                border-radius: 6px;
+                text-align: center;
+                font-weight: 600;
+            ">
+                {{ session('success') }}
+            </div>
+        @endif
+
         body { margin: 0; font-family: "Segoe UI", Tahoma, sans-serif; background: #ffffff; }
         .page-wrapper {
             display: flex;
